@@ -9,27 +9,32 @@ using Microsoft.EntityFrameworkCore;
 using WebRestEF.EF.Data;
 using WebRestEF.EF.Models;
 using WebRest.Interfaces;
+using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Runtime.ConstrainedExecution;
 namespace WebRest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GendersController : ControllerBase, iController<Gender>
+    public class GendersController : ControllerBase, iController<Gender, GenderDTO>
     {
         private readonly WebRestOracleContext _context;
+        private readonly IMapper _mapper;
 
-        public GendersController(WebRestOracleContext context)
+        public GendersController(WebRestOracleContext context,
+            IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
+           // _context.LoggedInUserId = "XYZ";
         }
 
-        // GET: api/Genders
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Gender>>> Get()
         {
             return await _context.Genders.ToListAsync();
         }
 
-        // GET: api/Genders/5
         [HttpGet]
         [Route("{id}")]
         public async Task<ActionResult<Gender>> Get(string id)
@@ -44,50 +49,64 @@ namespace WebRest.Controllers
             return gender;
         }
 
-        // PUT: api/Genders/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, Gender gender)
+        public async Task<IActionResult> Put(string id, GenderDTO _genderDTO)
         {
-            if (id != gender.GenderId)
+
+            if (id != _genderDTO.GenderId)
             {
                 return BadRequest();
             }
-            _context.Genders.Update(gender);
 
-
-
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                await _context.SaveChangesAsync();
+                //  Set context
+                //_context.SetUserID(_context.LoggedInUserId);
+
+                //  POJO code goes here                
+                var _item = _mapper.Map<Gender>(_genderDTO);
+                _context.Genders.Update(_item);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!GenderExists(id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                
+                await transaction.CommitAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception e)
             {
-                if (!GenderExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                await transaction.RollbackAsync();
+                throw new Exception(e.Message, e);
             }
 
             return NoContent();
+
         }
 
-        // POST: api/Genders
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Gender>> Post(Gender gender)
+        public async Task<ActionResult<Gender>> Post(GenderDTO _genderDTO)
         {
-            _context.Genders.Add(gender);
+            var _item = _mapper.Map<Gender>(_genderDTO);
+            _item.GenderId = null;      //  Force a new PK to be created
+            _context.Genders.Add(_item);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGender", new { id = gender.GenderId }, gender);
+            CreatedAtActionResult ret = CreatedAtAction("Get", new { id = _item.GenderId }, _item);
+            return Ok(ret);
         }
 
-        // DELETE: api/Genders/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -107,5 +126,7 @@ namespace WebRest.Controllers
         {
             return _context.Genders.Any(e => e.GenderId == id);
         }
+
+
     }
 }

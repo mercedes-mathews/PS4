@@ -1,4 +1,6 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using WebRest.Code;
 using WebRestEF.EF.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,13 @@ builder.Services.AddDbContext<WebRestOracleContext>
     .UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
     );
 
+var mapperConfiguration = new MapperConfiguration(configuration =>
+{
+    var profile = new MappingProfile();
+    configuration.AddProfile(profile);
+});
+var mapper = mapperConfiguration.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 builder.Services.AddControllers();
 
