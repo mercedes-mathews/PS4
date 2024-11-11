@@ -99,7 +99,7 @@ namespace WebRest.Controllers
         [HttpPost]
         public async Task<ActionResult<Gender>> Post(GenderDTO _genderDTO)
         {
-            var _item = _mapper.Map<Gender>(_genderDTO);
+            Gender _item = _mapper.Map<Gender>(_genderDTO);
             _item.GenderId = null;      //  Force a new PK to be created
             _context.Genders.Add(_item);
             await _context.SaveChangesAsync();
