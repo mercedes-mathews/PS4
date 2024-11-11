@@ -17,44 +17,44 @@ namespace WebRest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GendersController : ControllerBase, iController<Gender, GenderDTO>
+    public class AddressController : ControllerBase, iController<Address, AddressDTO>
     {
         private readonly WebRestOracleContext _context;
         private readonly IMapper _mapper;
 
-        public GendersController(WebRestOracleContext context,
+        public AddressController(WebRestOracleContext context,
             IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-           // _context.LoggedInUserId = "XYZ";
+            // _context.LoggedInUserId = "XYZ";
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Gender>>> Get()
+        public async Task<ActionResult<IEnumerable<Address>>> Get()
         {
-            return await _context.Genders.ToListAsync();
+            return await _context.Addresses.ToListAsync();
         }
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<ActionResult<Gender>> Get(string id)
+        public async Task<ActionResult<Address>> Get(string id)
         {
-            var gender = await _context.Genders.FindAsync(id);
+            var _item = await _context.Addresses.FindAsync(id);
 
-            if (gender == null)
+            if (_item == null)
             {
                 return NotFound();
             }
 
-            return gender;
+            return _item;
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, GenderDTO _genderDTO)
+        public async Task<IActionResult> Put(string id, AddressDTO _AddressDTO)
         {
 
-            if (id != _genderDTO.GenderId)
+            if (id != _AddressDTO.AddressId)
             {
                 return BadRequest();
             }
@@ -66,8 +66,8 @@ namespace WebRest.Controllers
                 //_context.SetUserID(_context.LoggedInUserId);
 
                 //  POJO code goes here                
-                var _item = _mapper.Map<Gender>(_genderDTO);
-                _context.Genders.Update(_item);
+                var _item = _mapper.Map<Address>(_AddressDTO);
+                _context.Addresses.Update(_item);
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -83,7 +83,7 @@ namespace WebRest.Controllers
                         throw;
                     }
                 }
-                
+
                 await transaction.CommitAsync();
             }
             catch (Exception e)
@@ -97,27 +97,27 @@ namespace WebRest.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Gender>> Post(GenderDTO _genderDTO)
+        public async Task<ActionResult<Address>> Post(AddressDTO _AddressDTO)
         {
-            var _item = _mapper.Map<Gender>(_genderDTO);
-            _item.GenderId = null;      //  Force a new PK to be created
-            _context.Genders.Add(_item);
+            var _item = _mapper.Map<Address>(_AddressDTO);
+            _item.AddressId = null;      //  Force a new PK to be created
+            _context.Addresses.Add(_item);
             await _context.SaveChangesAsync();
 
-            CreatedAtActionResult ret = CreatedAtAction("Get", new { id = _item.GenderId }, _item);
+            CreatedAtActionResult ret = CreatedAtAction("Get", new { id = _item.AddressId }, _item);
             return Ok(ret);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var gender = await _context.Genders.FindAsync(id);
-            if (gender == null)
+            var _item = await _context.Addresses.FindAsync(id);
+            if (_item == null)
             {
                 return NotFound();
             }
 
-            _context.Genders.Remove(gender);
+            _context.Addresses.Remove(_item);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -125,7 +125,7 @@ namespace WebRest.Controllers
 
         private bool Exists(string id)
         {
-            return _context.Genders.Any(e => e.GenderId == id);
+            return _context.Addresses.Any(e => e.AddressId == id);
         }
 
 
