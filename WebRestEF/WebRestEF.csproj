@@ -14,8 +14,4 @@
     <PackageReference Include="Oracle.EntityFrameworkCore" Version="8.23.60" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\WebRestShared\WebRestShared.csproj" />
-  </ItemGroup>
-
 </Project>

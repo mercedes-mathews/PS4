@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,125 +9,103 @@ using Microsoft.EntityFrameworkCore;
 using WebRestEF.EF.Data;
 using WebRestEF.EF.Models;
 using WebRest.Interfaces;
-using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Runtime.ConstrainedExecution;
-using WebRestShared.DTO;
 namespace WebRest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AddressController : ControllerBase, iController<Address, AddressDTO>
+    public class AddressesController : ControllerBase, iController<Address>
     {
         private readonly WebRestOracleContext _context;
-        private readonly IMapper _mapper;
 
-        public AddressController(WebRestOracleContext context,
-            IMapper mapper)
+        public AddressesController(WebRestOracleContext context)
         {
             _context = context;
-            _mapper = mapper;
-            // _context.LoggedInUserId = "XYZ";
         }
 
+        // GET: api/Addresses
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Address>>> Get()
         {
             return await _context.Addresses.ToListAsync();
         }
 
+        // GET: api/Addresses/5
         [HttpGet]
         [Route("{id}")]
         public async Task<ActionResult<Address>> Get(string id)
         {
-            var _item = await _context.Addresses.FindAsync(id);
+            var address = await _context.Addresses.FindAsync(id);
 
-            if (_item == null)
+            if (address == null)
             {
                 return NotFound();
             }
 
-            return _item;
+            return address;
         }
 
+        // PUT: api/Addresses/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, AddressDTO _AddressDTO)
+        public async Task<IActionResult> Put(string id, Address address)
         {
-
-            if (id != _AddressDTO.AddressId)
+            if (id != address.AddressId)
             {
                 return BadRequest();
             }
+            _context.Addresses.Update(address);
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+
             try
             {
-                //  Set context
-                //_context.SetUserID(_context.LoggedInUserId);
-
-                //  POJO code goes here                
-                var _item = _mapper.Map<Address>(_AddressDTO);
-                _context.Addresses.Update(_item);
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!Exists(id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
-                await transaction.CommitAsync();
+                await _context.SaveChangesAsync();
             }
-            catch (Exception e)
+            catch (DbUpdateConcurrencyException)
             {
-                await transaction.RollbackAsync();
-                throw new Exception(e.Message, e);
+                if (!AddressExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             return NoContent();
-
         }
 
+        // POST: api/Addresses
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Address>> Post(AddressDTO _AddressDTO)
+        public async Task<ActionResult<Address>> Post(Address address)
         {
-            var _item = _mapper.Map<Address>(_AddressDTO);
-            _item.AddressId = null;      //  Force a new PK to be created
-            _context.Addresses.Add(_item);
+            _context.Addresses.Add(address);
             await _context.SaveChangesAsync();
 
-            CreatedAtActionResult ret = CreatedAtAction("Get", new { id = _item.AddressId }, _item);
-            return Ok(ret);
+            return CreatedAtAction("GetAddress", new { id = address.AddressId }, address);
         }
 
+        // DELETE: api/Addresses/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var _item = await _context.Addresses.FindAsync(id);
-            if (_item == null)
+            var address = await _context.Addresses.FindAsync(id);
+            if (address == null)
             {
                 return NotFound();
             }
 
-            _context.Addresses.Remove(_item);
+            _context.Addresses.Remove(address);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool Exists(string id)
+        private bool AddressExists(string id)
         {
             return _context.Addresses.Any(e => e.AddressId == id);
         }
-
-
     }
 }

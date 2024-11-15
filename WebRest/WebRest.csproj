@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WebRestEF\WebRestEF.csproj" />
-    <ProjectReference Include="..\WebRestShared\WebRestShared.csproj" />
   </ItemGroup>
 
 </Project>

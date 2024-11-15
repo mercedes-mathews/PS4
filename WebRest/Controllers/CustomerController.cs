@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,47 +13,47 @@ namespace WebRest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GendersController : ControllerBase, iController<Gender>
+    public class CustomersController : ControllerBase, iController<Customer>
     {
         private readonly WebRestOracleContext _context;
 
-        public GendersController(WebRestOracleContext context)
+        public CustomersController(WebRestOracleContext context)
         {
             _context = context;
         }
 
-        // GET: api/Genders
+        // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Gender>>> Get()
+        public async Task<ActionResult<IEnumerable<Customer>>> Get()
         {
-            return await _context.Genders.ToListAsync();
+            return await _context.Customers.ToListAsync();
         }
 
-        // GET: api/Genders/5
+        // GET: api/Customers/5
         [HttpGet]
         [Route("{id}")]
-        public async Task<ActionResult<Gender>> Get(string id)
+        public async Task<ActionResult<Customer>> Get(string id)
         {
-            var _item = await _context.Genders.FindAsync(id);
+            var customer = await _context.Customers.FindAsync(id);
 
-            if (_item == null)
+            if (customer == null)
             {
                 return NotFound();
             }
 
-            return _item;
+            return customer;
         }
 
-        // PUT: api/Genders/5
+        // PUT: api/Customers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, Gender _item)
+        public async Task<IActionResult> Put(string id, Customer customer)
         {
-            if (id != _item.GenderId)
+            if (id != customer.CustomerId)
             {
                 return BadRequest();
             }
-            _context.Genders.Update(_item);
+            _context.Customers.Update(customer);
 
 
 
@@ -63,7 +63,7 @@ namespace WebRest.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!GenderExists(id))
+                if (!CustomerExists(id))
                 {
                     return NotFound();
                 }
@@ -76,36 +76,36 @@ namespace WebRest.Controllers
             return NoContent();
         }
 
-        // POST: api/Genders
+        // POST: api/Customers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Gender>> Post(Gender _item)
+        public async Task<ActionResult<Customer>> Post(Customer customer)
         {
-            _context.Genders.Add(_item);
+            _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGender", new { id = _item.GenderId }, _item);
+            return CreatedAtAction("GetCustomer", new { id = customer.CustomerId }, customer);
         }
 
-        // DELETE: api/Genders/5
+        // DELETE: api/Customers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var _item = await _context.Genders.FindAsync(id);
-            if (_item == null)
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer == null)
             {
                 return NotFound();
             }
 
-            _context.Genders.Remove(_item);
+            _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool GenderExists(string id)
+        private bool CustomerExists(string id)
         {
-            return _context.Genders.Any(e => e.GenderId == id);
+            return _context.Customers.Any(e => e.CustomerId == id);
         }
     }
 }
